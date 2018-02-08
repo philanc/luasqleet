@@ -4,7 +4,7 @@ local driver = require "luasqleet"
 -- create environment object
 env = assert (driver.sqleet())
 -- connect to data source
-con = assert (env:connect("zzsq31"))
+con = assert (env:connect("test.sq"))
 
 -- define the database encryption key
 cur = con:execute"PRAGMA key='abc'"

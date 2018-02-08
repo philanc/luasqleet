@@ -27,7 +27,7 @@ test: luasqleet.so
 	lua test.lua
 	
 clean:
-	rm -f *.o *.a *.so sqleet
+	rm -f *.o *.a *.so sqleet test.sq
 
 .PHONY: clean shell
 
