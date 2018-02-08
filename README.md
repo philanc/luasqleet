@@ -9,7 +9,7 @@ PBKDF2 for key derivation.
 
 Luasqleet uses the (hardly modified) SQLite driver from LuaSQL.
 
-The API is identical to luasql.sqlite3. See the [LuaSQL manual] (http://htmlpreview.github.com/?https://github.com/keplerproject/luasql/blob/master/doc/us/manual.html).
+The API is identical to luasql.sqlite3. See the [LuaSQL manual](http://htmlpreview.github.com/?https://github.com/keplerproject/luasql/blob/master/doc/us/manual.html).
 
 The encryption key is derived from a password. The password is set with the standard SQLite syntax (`PRAGMA key = 'some password'` - see file test.lua).
 
