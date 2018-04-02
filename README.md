@@ -7,9 +7,9 @@ Sqleet is a cool encryption extension for SQLite, by github user Resilar. See ht
 Sqleet uses Chacha20 / Poly1305 for authenticated encryption and 
 PBKDF2 for key derivation.
 
-Luasqleet uses the (hardly modified) SQLite driver from LuaSQL.
+Luasqleet uses the lsqlite3 driver written by Tiago Dionizio, Doug Currie and hosted at http://lua.sqlite.org/index.cgi/index
 
-The API is identical to luasql.sqlite3. See the [LuaSQL manual](http://htmlpreview.github.com/?https://github.com/keplerproject/luasql/blob/master/doc/us/manual.html).
+The API is identical to lsqlite3. See the [lsqlite3 manual](http://lua.sqlite.org/index.cgi/doc/tip/doc/lsqlite3.wiki).
 
 The encryption key is derived from a password. The password is set with the standard SQLite syntax:
 ```
@@ -17,7 +17,7 @@ PRAGMA key = 'some password'
 ```
 See file test.lua.
 
-Luasqleet includes the SQLite 3.21 amalgamation, so the luasqleet.so Lua extension module can be built without any dependancy.
+Luasqleet includes the SQLite amalgamation, so luasqleet.so can be built without any dependancy.
 
 ### Credit
 
@@ -25,16 +25,14 @@ Luasqleet includes the SQLite 3.21 amalgamation, so the luasqleet.so Lua extensi
 
 - [Resilar](https://github.com/resilar/sqleet), for this nice encryption codec 
 
-- The Kepler Project contributors for [LuaSQL](https://github.com/keplerproject/luasql) - The luasqleet.c, luasql.c/.h and test1.lua files come from LuaSQL. They have hardly been modified.
+- Tiago Dionizio and Doug Currie for the [lsqlite3](http://lua.sqlite.org/index.cgi/index) Lua wrapper
 
 
 ### License
 
 SQLite and Sqleet are public domain.
 
-LuaSQL uses the same license as Lua (MIT).
-
-Luasqleet license is also MIT.
+lsqlite3 and luasqleet use the same license as Lua (MIT). lsqlite3 copyright and license notice are at the top of src/lsqlite3.c.
 
 
 

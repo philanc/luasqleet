@@ -1,49 +1,47 @@
 
--- load driver
-local driver = require "luasqleet"
--- create environment object
-env = assert (driver.sqleet())
--- connect to data source
-con = assert (env:connect("test.sq"))
+local sq = require("luasqleet")
 
--- define the database encryption key
-cur = con:execute"PRAGMA key='abc'"
--- previous line return an open cursor because this pragma 
--- is considered as a query (?!?). So, close the cursor!  
--- (if not, an "open cursors" error will happen 
--- when the connection is closed)
-cur:close() 
+local db = sq.open('test.db')
 
--- reset our table
-res = con:execute"DROP TABLE people"
-res = assert (con:execute[[
-  CREATE TABLE people(
-    name  varchar(50),
-    email varchar(50)
-  )
-]])
--- add a few elements
-list = {
-  { name="Jose das Couves", email="jose@couves.com", },
-  { name="Manoel Joaquim", email="manoel.joaquim@cafundo.com", },
-  { name="Maria das Dores", email="maria@dores.com", },
-}
-for i, p in pairs (list) do
-  res = assert (con:execute(string.format([[
-    INSERT INTO people
-    VALUES ('%s', '%s')]], p.name, p.email)
-  ))
+db:exec[[ PRAGMA key='abc' ]]
+db:exec[[ DROP TABLE test]]
+
+
+db:exec[[
+  CREATE TABLE test (id INTEGER PRIMARY KEY, content);
+
+  INSERT INTO test VALUES (NULL, 'Hello World');
+  INSERT INTO test VALUES (NULL, 'Hello Lua');
+  INSERT INTO test VALUES (NULL, 'Hello Sqlite3')
+]]
+
+print[[
+------------------------------------------------------------------------
+Table 'test' content:
+]]
+
+for row in db:nrows("SELECT * FROM test") do
+  print(row.id, row.content)
 end
--- retrieve a cursor
-cur = assert (con:execute"SELECT name, email from people")
--- print all rows, the rows will be indexed by field names
-row = cur:fetch ({}, "a")
-while row do
-  print(string.format("Name: %s, E-mail: %s", row.name, row.email))
-  -- reusing the table of results
-  row = cur:fetch (row, "a")
-end
--- close everything
-cur:close() -- already closed because all the result set was consumed
-con:close()
-env:close()
+
+print[[
+------------------------------------------------------------------------
+An encrypted database has been created in 'test.db' with password 'abc'.
+Open test.db with the shell 'sqleet':
+
+   ./sqleet test.db
+
+Try to dump the content of the DB:
+
+   .dump
+   
+test.db is not recognized as a sqlite file. Password must be entered:
+
+   pragma key = 'abc'
+   
+Now,  the DB can be accessed. '.dump' display its content.
+------------------------------------------------------------------------
+]]
+
+db:close()
+

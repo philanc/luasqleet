@@ -1,9 +1,26 @@
+/*
+ * SQLite3 configuration.
+ */
 #ifndef SQLITE_HAS_CODEC
 #define SQLITE_HAS_CODEC 1
 #endif
+#ifndef SQLITE_TEMP_STORE
 #define SQLITE_TEMP_STORE 2
+#endif
+
+/*
+ * sqleet_configuration.
+ *
+ * # SKIP_HEADER_BYTES
+ * Keep this many bytes unencrypted in the beginning of the database header.
+ * Use 24 for better compatibility with the SQLite3 Encryption Extension (SEE).
+ */
+#ifndef SKIP_HEADER_BYTES
+#define SKIP_HEADER_BYTES 0
+#endif
 
 #include "sqlite3.c"
+#include "rekeyvacuum.c"
 #include "crypto.c"
 
 /*
@@ -124,6 +141,7 @@ void *codec_handle(void *codec, void *pdata, Pgno page, int mode)
     unsigned char otk[64], tag[16], *data = pdata;
     Codec *reader = ((Codec *)codec)->reader;
     Codec *writer = ((Codec *)codec)->writer;
+    const int skip = (page == 1) ? SKIP_HEADER_BYTES : 0;
 
     switch (mode) {
     case 0: /* Journal decryption */
@@ -143,14 +161,12 @@ void *codec_handle(void *codec, void *pdata, Pgno page, int mode)
 
             /* Verify the MAC */
             poly1305(data, n + PAGE_NONCE_LEN, otk, tag);
-            if (!poly1305_tagcmp(data + n + PAGE_NONCE_LEN, tag)) {
-                /* Decrypt */
-                chacha20_xor(data, n, otk+32, data + n, counter+1);
-                if (page == 1) memcpy(data, "SQLite format 3", 16);
-            } else {
-                /* Bad MAC */
-                data = NULL;
-            }
+            if (poly1305_tagcmp(data + n + PAGE_NONCE_LEN, tag) != 0)
+                return NULL;
+
+            /* Decrypt */
+            chacha20_xor(data + skip, n - skip, otk+32, data + n, counter+1);
+            if (page == 1) memcpy(data, "SQLite format 3", 16);
         }
         break;
 
@@ -169,7 +185,7 @@ void *codec_handle(void *codec, void *pdata, Pgno page, int mode)
             chacha20_xor(otk, 64, writer->key, data + n, counter);
 
             /* Encrypt and authenticate */
-            chacha20_xor(data, n, otk+32, data + n, counter+1);
+            chacha20_xor(data + skip, n - skip, otk+32, data + n, counter+1);
             if (page == 1) memcpy(data, writer->salt, 16);
             poly1305(data, n + PAGE_NONCE_LEN, otk, data + n + PAGE_NONCE_LEN);
         }
@@ -341,12 +357,14 @@ int sqlite3_rekey_v2(sqlite3 *db, const char *zDbName,
         reader = sqlite3PagerGetCodec(pager);
         if (!nKey) {
             /* Decrypt */
-            /* Truncating the reserved space is dangerous (may corrupt the DB)
-            sqlite3BtreeSetPageSize(pBt, sqlite3BtreeGetPageSize(pBt), 0, 0); */
             if (reader) {
                 reader->writer = NULL;
-                if ((rc = sqlite3RunVacuum(&err, db, nDb)) == SQLITE_OK)
+                rc = sqlite3RunVacuumForRekey(&err, db, nDb, 0);
+                if (rc == SQLITE_OK) {
                     rc = codec_set_to(NULL, pBt);
+                } else {
+                    reader->writer = reader->reader;
+                }
             } else {
                 rc = codec_verify_page1(NULL, pBt);
             }
@@ -370,8 +388,14 @@ int sqlite3_rekey_v2(sqlite3 *db, const char *zDbName,
         if (!reader) {
             /* Encrypt */
             codec->reader = NULL;
-            if ((rc = codec_set_to(codec, pBt)) == SQLITE_OK)
-                rc = sqlite3RunVacuum(&err, db, nDb);
+            if ((rc = codec_set_to(codec, pBt)) == SQLITE_OK) {
+                rc = sqlite3RunVacuumForRekey(&err, db, nDb, PAGE_RESERVED_LEN);
+                if (rc == SQLITE_OK) {
+                    codec->reader = codec->writer;
+                } else {
+                    codec_set_to(NULL, pBt);
+                }
+            }
             goto leave;
         }
 
