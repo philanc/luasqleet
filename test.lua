@@ -37,7 +37,7 @@ Try to dump the content of the DB:
    
 test.db is not recognized as a sqlite file. Password must be entered:
 
-   pragma key = 'abc'
+   pragma key = 'abc' ;
    
 Now,  the DB can be accessed. '.dump' display its content.
 ------------------------------------------------------------------------
