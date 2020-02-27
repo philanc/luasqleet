@@ -28,7 +28,7 @@ To build luasqleet.so:
 make
 ```
 
-It also build `sqleet`, the sqlite3 shell with the same encryption extension.
+It also builds `sqleet`, the sqlite3 shell with the same encryption extension.
 
 
 ### Credit
