@@ -15,7 +15,79 @@ The encryption key is derived from a password. The password is set with the stan
 ```
 PRAGMA key = 'some password' 
 ```
-See file test.lua.
+
+For example, let's create a new encrypted database and insert some values in it:
+```
+local sq = require("luasqleet")
+
+-- create an empty database
+local db = sq.open('test.db') 
+
+-- activate encryption - set the password 
+-- (the password value can be any string)
+db:exec[[ PRAGMA key='abc' ]] 
+
+-- create a table and insert some values in it
+db:exec[[
+  CREATE TABLE test (id INTEGER PRIMARY KEY, content);
+  INSERT INTO test VALUES (NULL, 'Hello World');
+  INSERT INTO test VALUES (NULL, 'Hello Lua');
+  INSERT INTO test VALUES (NULL, 'Hello Sqlite3')
+]]
+
+db:close()
+```
+
+Open an existing encrypted database and read the content:
+```
+local sq = require("luasqleet")
+
+-- open an encrypted database created in the previous example
+local db = sq.open('test.db') 
+
+-- enter the password to enable on the fly encryption/decryption
+db:exec[[ PRAGMA key='abc' ]] 
+
+-- read and display the content
+for row in db:nrows("SELECT * FROM test") do
+  print(row.id, row.content)
+end
+
+db:close()
+```
+
+The encrypted database can also be examined with `sqleet`, the encrypted sqlite3 shell:
+```
+$ ./sqleet test.db 
+  SQLite version 3.31.1 2020-01-27 19:55:54
+  Enter ".help" for usage hints.
+  
+sqlite> # try to display database content
+sqlite> # => database is encrypted so is not
+sqlite> # recognized as a valid scqlite3 database
+sqlite> .dump
+  PRAGMA foreign_keys=OFF;
+  BEGIN TRANSACTION;
+  /**** ERROR: (26) file is not a database *****/
+  ROLLBACK; -- due to errors
+
+sqlite> # enter the database password
+sqlite> pragma key = 'abc';
+  ok
+
+sqlite> # now it recognized as a valid sqlite3 database:
+sqlite> .dump
+  PRAGMA foreign_keys=OFF;
+  BEGIN TRANSACTION;
+  CREATE TABLE test (id INTEGER PRIMARY KEY, content);
+  INSERT INTO test VALUES(1,'Hello World');
+  INSERT INTO test VALUES(2,'Hello Lua');
+  INSERT INTO test VALUES(3,'Hello Sqlite3');
+  COMMIT;
+
+sqlite> .quit
+```
+
 
 Luasqleet includes the SQLite amalgamation (sqlite3 version 3.31.1) , so luasqleet.so can be built without any dependancy.
 
