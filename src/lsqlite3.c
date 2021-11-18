@@ -54,7 +54,8 @@
 #endif
 #endif
 
-#include "sqlite3.h"
+//~ #include "sqlite3.h"
+#include "sqleet.h"
 
 /* compile time features */
 #if !defined(SQLITE_OMIT_PROGRESS_CALLBACK)

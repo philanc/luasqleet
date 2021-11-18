@@ -24,24 +24,27 @@ for row in db:nrows("SELECT * FROM test") do
   print(row.id, row.content)
 end
 
+db:close()
+
 print[[
 ------------------------------------------------------------------------
 An encrypted database has been created in 'test.db' with password 'abc'.
-Open test.db with the shell 'sqleet':
-
-   ./sqleet test.db
-
-Try to dump the content of the DB:
-
-   .dump
-   
-test.db is not recognized as a sqlite file. Password must be entered:
-
-   pragma key = 'abc' ;
-   
-Now,  the DB can be accessed. '.dump' display its content.
+Now, let's dump it with the shell 'sqleet':
 ------------------------------------------------------------------------
 ]]
 
-db:close()
+assert(os.execute [[
+./sqleet test.db << EOF
+pragma key = 'abc' ;
+.dump
+.quit
+EOF
+]])
+
+print[[
+
+luasqleet test:  ok.
+------------------------------------------------------------------------
+]]
+
 
