@@ -1,8 +1,8 @@
 # luasqleet
 
-This is a Lua binding for Sqleet, an encrypted extension to SQLite3.  This is an alpha version, tested on Linux with Lua 5.3.
+This is a Lua binding for Sqleet, an encrypted extension to SQLite3.  It has been tested on Linux with Lua 5.3 and 5.4.
 
-Sqleet is a cool encryption extension for SQLite, by github user Resilar. See https://github.com/resilar/sqleet.  It is a very nice and easy to read implementation of a SQLite encryption codec (much simpler than SQLCipher).  
+Sqleet is a nice encryption extension for SQLite, by github user Resilar. See https://github.com/resilar/sqleet.  It is an easy-to-read implementation of a SQLite encryption codec (much simpler than SQLCipher).  
 
 Sqleet uses Chacha20 / Poly1305 for authenticated encryption and 
 PBKDF2 for key derivation.
@@ -89,7 +89,7 @@ sqlite> .quit
 ```
 
 
-Luasqleet includes the SQLite amalgamation (sqlite3 version 3.31.1) , so luasqleet.so can be built without any dependancy.
+Luasqleet includes the SQLite and sqleet codec amalgamation (sqlite3 version 3.31.1) , so luasqleet.so can be built without any dependancy.
 
 To build luasqleet.so:
 
