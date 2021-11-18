@@ -35,7 +35,7 @@ shell: luasqleet.so
 	$(CC) -o sqleet shell.o sqleet.o -lpthread -ldl 
 	strip sqleet
 
-test: luasqleet.so
+test: luasqleet.so shell
 	$(LUA) test.lua
 	
 clean:
