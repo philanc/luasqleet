@@ -1,3 +1,5 @@
+![CI](https://github.com/philanc/luasqleet/workflows/CI/badge.svg)
+
 # luasqleet
 
 This is a Lua binding for Sqleet, an encrypted extension to SQLite3.  It has been tested on Linux with Lua 5.3 and 5.4.
